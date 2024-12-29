@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Socket.IO Online Friends Example</title>
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+  </head>
+  <body>
+    <h1>Socket.IO Online Friends Demo</h1>
+
+    <script>
+      const socket = io("http://localhost:3000");
+      const userId = "1234"; // In reality, you’d get this from authentication
+
+      socket.on("connect", () => {
+        console.log("Connected to server, socket.id:", socket.id);
+        // Emit 'join' event so the server knows which user connected
+        socket.emit("join", userId);
+      });
+
+      // Listen for the full list of online users
+      socket.on("onlineUsers", (userIds) => {
+        console.log("Online users:", userIds);
+      });
+
+      // If you decide to only broadcast to friends
+      socket.on("onlineFriends", (friends) => {
+        console.log("My online friends:", friends);
+      });
+
+      socket.on("friendOnline", (friendId) => {
+        console.log(`Friend is now online: ${friendId}`);
+      });
+    </script>
+  </body>
+</html>
