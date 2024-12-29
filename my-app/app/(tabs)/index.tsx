@@ -1,16 +1,40 @@
 import { Image, StyleSheet, Platform } from "react-native";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { io, Socket } from "socket.io-client";
 
 export default function HomeScreen() {
   const [providers, setProviders] = useState([]);
   const [user, setUser] = useState("");
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
+
   const getProviders = async () => {
     const response = await axios.get("http://localhost:3000/api/users/");
     setProviders(response.data);
   };
   useEffect(() => {
     getProviders();
+  }, []);
+  useEffect(() => {
+    // Connect to your server. Update the URL/port as needed:
+    const newSocket = io("http://localhost:3000");
+    setSocket(newSocket);
+
+    // On successful connection
+    newSocket.on("connect", () => {
+      console.log("Connected to server with socket id:", newSocket.id);
+    });
+
+    // Whenever the server emits a list of online users
+    newSocket.on("onlineUsers", (users) => {
+      setOnlineUsers(users);
+    });
+
+    // Clean up on unmount
+    return () => {
+      newSocket.disconnect();
+    };
   }, []);
   return (
     <div>
@@ -52,7 +76,12 @@ export default function HomeScreen() {
             fontSize: "1rem",
           }}
           onClick={() => {
-            localStorage.setItem("username", user);
+            localStorage.setItem(
+              "username",
+              localStorage.getItem("username") || user
+            );
+
+            socket?.emit("join", localStorage.getItem("username") || user);
           }}
         >
           Chat
@@ -86,7 +115,7 @@ export default function HomeScreen() {
           />
           <div style={{ fontSize: "1rem", fontWeight: 500, gap: 2 }}>
             {provider?.username}
-            {provider.status === "offline" ? " 🔴" : " 🟢"} &nbsp;
+            {onlineUsers.includes(provider.username) ? " 🟢" : " 🔴"} &nbsp;
           </div>
         </div>
       ))}

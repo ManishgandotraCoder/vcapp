@@ -52,35 +52,46 @@ io.on("connection", (socket) => {
   socket.on("join", (userId: string) => {
     console.log(`User ${userId} connected with socketId: ${socket.id}`);
 
+    // 1. Store in-memory tracking
     onlineUsers.set(userId, socket.id);
 
-    User.findByIdAndUpdate(
-      userId,
+    // 2. Update user status in DB
+    User.findOneAndUpdate(
+      { username: userId }, // <--- This looks for a user document by 'username'
       { status: statusType.online },
-      { new: true }
-    );
+      { new: true } // returns the updated document
+    )
+      .then((updatedUser) => {
+        console.log("User status updated:", updatedUser);
+      })
+      .catch((err) => console.error("Error updating user status:", err));
+
+    // 3. Broadcast updated online user list
     io.emit("onlineUsers", Array.from(onlineUsers.keys()));
   });
 
-  // Socket disconnection
   socket.on("disconnect", () => {
     console.log(`Client disconnected: ${socket.id}`);
 
-    // Remove user from online users
-    // We need to find which userId was tied to this socket.id
+    // 4. Remove user from online users Map
     for (const [userId, sockId] of onlineUsers.entries()) {
       if (sockId === socket.id) {
         onlineUsers.delete(userId);
+
+        // 5. Update user status to 'offline'
+        //    Note here you use `findByIdAndUpdate` whereas above you used `findOneAndUpdate`.
+        //    Make sure `userId` is the actual `_id` if you want to use findByIdAndUpdate.
         User.findByIdAndUpdate(
           userId,
           { status: statusType.offline },
-          { new: true } // return the modified document rather than the original
-        );
+          { new: true }
+        ).catch((err) => console.error("Error setting user offline:", err));
+
         break;
       }
     }
 
-    // Broadcast updated online users
+    // 6. Broadcast updated online user list again
     io.emit("onlineUsers", Array.from(onlineUsers.keys()));
   });
 });
