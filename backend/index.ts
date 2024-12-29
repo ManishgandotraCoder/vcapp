@@ -5,6 +5,8 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 import { connectDB } from "./src/config/db";
 import userRoutes from "./src/routes/user.routes";
+import cors from "cors";
+import User, { statusType } from "./src/models/User";
 
 dotenv.config();
 
@@ -18,6 +20,13 @@ const io = new Server(httpServer, {
     origin: "*", // or specify your client URL, e.g., "http://localhost:3001"
   },
 });
+const corsOptions = {
+  origin: "*", // or an array of domains
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // if you need to allow cookies/auth headers
+};
+app.use(cors(corsOptions));
 
 // Middleware
 app.use(express.json());
@@ -40,13 +49,16 @@ const onlineUsers = new Map<string, string>();
 io.on("connection", (socket) => {
   console.log("New client connected:", socket.id);
 
-  // Optionally, listen for an event that passes userId
-  // (Requires your frontend to emit something like 'join' with userId)
   socket.on("join", (userId: string) => {
     console.log(`User ${userId} connected with socketId: ${socket.id}`);
+
     onlineUsers.set(userId, socket.id);
 
-    // Broadcast the new online user to everyone (or just to friends, if needed)
+    User.findByIdAndUpdate(
+      userId,
+      { status: statusType.online },
+      { new: true }
+    );
     io.emit("onlineUsers", Array.from(onlineUsers.keys()));
   });
 
@@ -59,6 +71,11 @@ io.on("connection", (socket) => {
     for (const [userId, sockId] of onlineUsers.entries()) {
       if (sockId === socket.id) {
         onlineUsers.delete(userId);
+        User.findByIdAndUpdate(
+          userId,
+          { status: statusType.offline },
+          { new: true } // return the modified document rather than the original
+        );
         break;
       }
     }

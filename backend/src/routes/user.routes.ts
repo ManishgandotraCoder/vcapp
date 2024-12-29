@@ -18,11 +18,12 @@ router.get("/", async (req: Request, res: Response) => {
 // POST: Create a new user
 router.post("/", async (req: Request, res: Response) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, profilePic } = req.body;
     const newUser = new User({
       username,
       email,
       password,
+      profilePic,
     });
     const savedUser = await newUser.save();
     res.status(201).json(savedUser);
@@ -35,10 +36,10 @@ router.post("/", async (req: Request, res: Response) => {
 router.put("/:id", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { username, email, password, status } = req.body;
+    const { username, email, password, status, profilePic } = req.body;
     const updatedUser = await User.findByIdAndUpdate(
       id,
-      { username, email, password, status },
+      { username, email, password, status, profilePic },
       { new: true }
     );
     res.json(updatedUser);
