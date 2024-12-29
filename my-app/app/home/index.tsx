@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { io, Socket } from "socket.io-client";
+import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
   // State
@@ -11,6 +12,7 @@ export default function HomeScreen() {
   });
   const [socket, setSocket] = useState<Socket | null>(null);
   const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
+  const router = useRouter();
 
   /**
    * Fetch all providers from the server
@@ -81,19 +83,21 @@ export default function HomeScreen() {
           Chat
         </button>
       </div>
-
       {/* List of Providers */}
-      {providers.map((provider) => (
-        <div key={provider.id} style={styles.providerCard}>
+      {onlineUsers.map((provider) => (
+        <div
+          key={provider}
+          style={styles.providerCard}
+          // onClick={() => router.push("/profile")}
+        >
           <img
-            src={provider?.profilePic}
+            src={
+              providers.find((item) => item.username === provider)?.profilePic
+            }
             alt="profilePic"
             style={styles.providerImage}
           />
-          <div style={styles.providerName}>
-            {provider?.username}
-            {onlineUsers.includes(provider.username) ? " 🟢" : " 🔴"}
-          </div>
+          <div style={styles.providerName}>{provider} 🟢</div>
         </div>
       ))}
     </div>
