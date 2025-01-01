@@ -1,12 +1,12 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "src/index.tsx",
+  "main": "src/index.ts",
   "scripts": {
     "build": "tsc",
     "start": "ts-node src/index.ts",
-    "dev": "nodemon --watch src --exec ts-node index.ts",
-    "postbuild": "chmod +x bin/postbuild.sh && ./bin/postbuild.sh",
+    "dev": "nodemon --watch src --exec ts-node src/index.ts",
+    "postbuild": "chmod +x bin/postbuild.sh && bin/postbuild.sh",
     "serve": "node dist/index.js"
   },
   "keywords": [],

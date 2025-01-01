@@ -3,10 +3,10 @@ import express, { Application, Request, Response } from "express";
 import dotenv from "dotenv";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { connectDB } from "./src/config/db";
-import userRoutes from "./src/routes/user.routes";
+import { connectDB } from "./config/db";
+import userRoutes from "./routes/user.routes";
 import cors from "cors";
-import User, { statusType } from "./src/models/User";
+import User, { statusType } from "./models/User";
 
 dotenv.config();
 
