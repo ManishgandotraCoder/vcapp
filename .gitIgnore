@@ -1,2 +1,5 @@
 backend/node_modules
 my-app/node_modules
+backend/.amplify-hosting
+dist
+node_modules

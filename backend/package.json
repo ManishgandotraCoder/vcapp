@@ -4,8 +4,10 @@
   "main": "src/index.tsx",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.ts",
-    "dev": "nodemon --watch src --exec ts-node index.ts"
+    "start": "ts-node src/index.ts",
+    "dev": "nodemon --watch src --exec ts-node index.ts",
+    "postbuild": "chmod +x bin/postbuild.sh && ./bin/postbuild.sh",
+    "serve": "node dist/index.js"
   },
   "keywords": [],
   "author": "",
